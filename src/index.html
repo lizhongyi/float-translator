@@ -378,6 +378,22 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
         </svg>
       </button>
     </div>
+
+    <!-- Chat history -->
+    <div class="voice-div-row" style="margin-top:8px">
+      <div class="div-line"></div>
+      <span style="font-size:9px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase">聊天记录</span>
+      <button class="ibtn" id="clearHistoryBtn" title="Clear history" style="width:20px;height:20px">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <line x1="3" y1="3" x2="13" y2="13"/><line x1="13" y1="3" x2="3" y2="13"/>
+        </svg>
+      </button>
+      <div class="div-line"></div>
+    </div>
+
+    <div class="out-wrap" style="flex:1;min-height:100px">
+      <div class="voice-out-box" id="historyBox" style="overflow-y:auto;max-height:200px;font-size:11px"></div>
+    </div>
   </div>
 
 </div>
@@ -392,6 +408,9 @@ let translating = false;
 let translatedText = '';
 let voiceTranslatedText = '';
 let isRecording = false;
+
+// Chat history
+let chatHistory = [];
 
 // Audio recording
 let mediaStream = null;
@@ -422,6 +441,8 @@ const voiceStatus = document.getElementById('voiceStatus');
 const liveBox = document.getElementById('liveBox');
 const voiceOutput = document.getElementById('voiceOutput');
 const voiceCopyBtn = document.getElementById('voiceCopyBtn');
+const historyBox = document.getElementById('historyBox');
+const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
 const settingsBtn = document.getElementById('settingsBtn');
 const closeBtn = document.getElementById('closeBtn');
@@ -481,6 +502,12 @@ translateBtn.addEventListener('click', doTranslate);
 
 copyBtn.addEventListener('click', () => copyText(translatedText, copyBtn));
 voiceCopyBtn.addEventListener('click', () => copyText(voiceTranslatedText, voiceCopyBtn));
+
+// Clear chat history
+clearHistoryBtn.addEventListener('click', () => {
+  chatHistory = [];
+  renderHistory();
+});
 
 settingsBtn.addEventListener('click', () => ipcRenderer.send('open-settings'));
 closeBtn.addEventListener('click', () => ipcRenderer.send('close-main'));
@@ -635,8 +662,10 @@ async function translateVoice(text) {
     voiceTranslatedText = result;
     setVoiceOutput(result);
     setVoiceStatus('正在监听…', true);
+    // Add to chat history
+    addToHistory(text, result);
   } catch (e) {
-    setVoiceOutput('翻译失败: ' + e.message, true);
+    setVoiceOutput('翻译失败：' + e.message, true);
     setVoiceStatus('正在监听…', true);
   }
 }
@@ -654,6 +683,32 @@ function setVoiceOutputLoading() {
 function setVoiceOutput(text, err = false) {
   voiceOutput.className = 'voice-out-box' + (err ? ' error' : '');
   voiceOutput.textContent = text;
+}
+
+// ── Chat history ────────────────────────────────────────────────────────────
+
+function renderHistory() {
+  if (chatHistory.length === 0) {
+    historyBox.textContent = '';
+    historyBox.className = 'voice-out-box empty';
+    return;
+  }
+  historyBox.className = 'voice-out-box';
+  historyBox.innerHTML = chatHistory.map(item => 
+    `<div style="margin-bottom:6px;padding:4px;border-left:2px solid var(--accent);background:rgba(0,0,0,0.2);border-radius:2px">
+      <div style="color:var(--dim);font-size:10px;margin-bottom:2px">${item.time}</div>
+      <div style="margin-bottom:2px">${item.source}</div>
+      <div style="color:var(--accent)">${item.target}</div>
+    </div>`
+  ).join('');
+  historyBox.scrollTop = historyBox.scrollHeight;
+}
+
+function addToHistory(source, target) {
+  const now = new Date();
+  const time = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  chatHistory.push({ time, source, target });
+  renderHistory();
 }
 
 // ── Copy helper ────────────────────────────────────────────────────────────
