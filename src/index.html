@@ -343,7 +343,7 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
       <span class="logo">Translator</span>
     </div>
     <div class="bar-right">
-      <button class="ibtn hidden" id="restoreBtn" title="恢复完整界面">
+      <button class="ibtn hidden" id="restoreBtn" title="Restore Full Interface">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M10 12l-4-4 4-4M14 8H4"/>
         </svg>
@@ -368,14 +368,14 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
         <path d="M2 4h12M2 8h8M2 12h10"/>
       </svg>
-      文字
+      Text
     </button>
     <button class="tab voice-tab" id="tabVoice">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
         <rect x="5" y="1" width="6" height="9" rx="3"/>
         <path d="M2 8s0 6 6 6 6-6 6-6M8 14v2"/>
       </svg>
-      语音
+      Voice
     </button>
     <div class="spacer"></div>
   </div>
@@ -385,23 +385,24 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
     <span style="font-size:10px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase">Auto</span>
     <span class="arr">→</span>
     <select class="lang-select" id="targetLang">
-      <option value="zh">ZH 中文</option>
-      <option value="en">EN 英文</option>
-      <option value="ja">JA 日语</option>
-      <option value="ko">KO 韩语</option>
-      <option value="fr">FR 法语</option>
-      <option value="de">DE 德语</option>
-      <option value="es">ES 西班牙</option>
-      <option value="ru">RU 俄语</option>
+     
+      <option value="en">EN English</option>
+       <option value="zh">ZH 中文</option>
+      <option value="ja">JA 日本語</option>
+      <option value="ko">KO 한국어</option>
+      <option value="fr">FR Français</option>
+      <option value="de">DE Deutsch</option>
+      <option value="es">ES Español</option>
+      <option value="ru">RU Русский</option>
     </select>
     <div class="spacer"></div>
-    <span class="hint" id="hintText">⌘↵ 翻译</span>
+    <span class="hint" id="hintText">⌘↵ Translate</span>
   </div>
 
   <!-- ── TEXT PANEL ── -->
   <div class="panel" id="textPanel">
     <div class="inp-wrap">
-      <textarea id="inputText" placeholder="粘贴或输入要翻译的文字…" spellcheck="false"></textarea>
+      <textarea id="inputText" placeholder="Paste or enter text to translate…" spellcheck="false"></textarea>
       <button class="x-btn" id="clearBtn">✕</button>
     </div>
 
@@ -417,7 +418,7 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
     </div>
 
     <div class="out-wrap">
-      <div class="out-box empty" id="output">翻译结果将显示在这里</div>
+      <div class="out-box empty" id="output">Translation result will be displayed here</div>
       <button class="copy-btn" id="copyBtn" title="Copy">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
           <rect x="5" y="5" width="9" height="9" rx="1.5"/>
@@ -438,30 +439,32 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
       </button>
       <div class="voice-lang-row">
         <select class="voice-lang-select" id="voiceLang">
-          <option value="auto">Auto 自动</option>
+          <option value="auto">Auto</option>
+           <option value="en-US">EN English</option>
           <option value="zh-CN">ZH 中文</option>
-          <option value="en-US">EN 英文</option>
-          <option value="ja-JP">JA 日语</option>
-          <option value="ko-KR">KO 韩语</option>
-          <option value="fr-FR">FR 法语</option>
-          <option value="de-DE">DE 德语</option>
-          <option value="es-ES">ES 西班牙</option>
-          <option value="ru-RU">RU 俄语</option>
+         
+          <option value="ja-JP">JA 日本語</option>
+          <option value="ko-KR">KO 한국어</option>
+          <option value="fr-FR">FR Français</option>
+          <option value="de-DE">DE Deutsch</option>
+          <option value="es-ES">ES Español</option>
+          <option value="ru-RU">RU Русский</option>
         </select>
         <span class="arr">→</span>
         <select class="voice-lang-select" id="voiceTargetLang">
+          <option value="en">EN English</option>
           <option value="zh">ZH 中文</option>
-          <option value="en">EN 英文</option>
-          <option value="ja">JA 日语</option>
-          <option value="ko">KO 韩语</option>
-          <option value="fr">FR 法语</option>
-          <option value="de">DE 德语</option>
-          <option value="es">ES 西班牙</option>
-          <option value="ru">RU 俄语</option>
+          
+          <option value="ja">JA 日本語</option>
+          <option value="ko">KO 한국어</option>
+          <option value="fr">FR Français</option>
+          <option value="de">DE Deutsch</option>
+          <option value="es">ES Español</option>
+          <option value="ru">RU Русский</option>
         </select>
       </div>
-      <span class="voice-status" id="voiceStatus">点击开始语音识别</span>
-      <button class="caption-mode-btn" id="captionModeBtn" title="进入字幕模式">
+      <span class="voice-status" id="voiceStatus">Click to start voice recognition</span>
+      <button class="caption-mode-btn" id="captionModeBtn" title="Enter caption mode">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
           <rect x="2" y="3" width="12" height="7" rx="1"/>
           <line x1="4" y1="7" x2="7" y2="7"/>
@@ -469,7 +472,7 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
           <line x1="4" y1="10" x2="6" y2="10"/>
           <line x1="8" y1="10" x2="12" y2="10"/>
         </svg>
-        字幕模式
+        Caption Mode
       </button>
     </div>
 
@@ -478,12 +481,12 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
 
     <div class="voice-div-row">
       <div class="div-line"></div>
-      <span style="font-size:9px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase">译文</span>
+      <span style="font-size:9px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase">Translation</span>
       <div class="div-line"></div>
     </div>
 
     <div class="out-wrap" style="flex:1">
-      <div class="voice-out-box empty" id="voiceOutput">语音翻译结果</div>
+      <div class="voice-out-box empty" id="voiceOutput">Voice translation result</div>
       <button class="copy-btn" id="voiceCopyBtn" title="Copy">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
           <rect x="5" y="5" width="9" height="9" rx="1.5"/>
@@ -495,7 +498,7 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
     <!-- Chat history -->
     <div class="voice-div-row" style="margin-top:8px">
       <div class="div-line"></div>
-      <span style="font-size:9px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase">聊天记录</span>
+      <span style="font-size:9px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase">Chat History</span>
       <button class="ibtn" id="clearHistoryBtn" title="Clear history" style="width:20px;height:20px">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
           <line x1="3" y1="3" x2="13" y2="13"/><line x1="13" y1="3" x2="3" y2="13"/>
@@ -580,7 +583,7 @@ voiceLang.addEventListener('change', () => {
   localStorage.setItem('voiceLang', voiceLang.value);
 });
 
-voiceTargetLang.value = localStorage.getItem('voiceTargetLang') || 'zh';
+voiceTargetLang.value = localStorage.getItem('voiceTargetLang') || 'en';
 voiceTargetLang.addEventListener('change', () => {
   localStorage.setItem('voiceTargetLang', voiceTargetLang.value);
 });
@@ -598,7 +601,7 @@ function switchMode(m) {
     textPanel.classList.remove('hidden');
     voicePanel.classList.add('hidden');
     textLangRow.style.display = 'flex';
-    hintText.textContent = '⌘↵ 翻译';
+    hintText.textContent = '⌘↵ Translate';
     if (isRecording) stopRecording();
     ipcRenderer.send('resize-window', 260);
   } else {
@@ -607,7 +610,7 @@ function switchMode(m) {
     voicePanel.classList.remove('hidden');
     textPanel.classList.add('hidden');
     textLangRow.style.display = 'none';
-    hintText.textContent = '点击麦克风开始';
+    hintText.textContent = 'Click microphone to start';
     ipcRenderer.send('resize-window', 700);
   }
 }
@@ -628,7 +631,7 @@ inputText.addEventListener('keydown', (e) => {
 clearBtn.addEventListener('click', () => {
   inputText.value = '';
   translateBtn.disabled = true;
-  setOutput('翻译结果将显示在这里', 'empty');
+  setOutput('Translation result will be displayed here', 'empty');
   translatedText = '';
 });
 
@@ -668,7 +671,7 @@ async function doTranslate() {
 function setOutput(content, state = '') {
   output.className = 'out-box' + (state ? ' ' + state : '');
   if (state === 'loading') {
-    output.innerHTML = `<div class="dots"><span></span><span></span><span></span></div><span style="font-family:'Syne',sans-serif;font-size:12px">翻译中…</span>`;
+    output.innerHTML = `<div class="dots"><span></span><span></span><span></span></div><span style="font-family:'Syne',sans-serif;font-size:12px">Translating...</span>`;
   } else {
     output.textContent = content;
   }
@@ -700,7 +703,7 @@ async function startRecording() {
       audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true, noiseSuppression: true }
     });
   } catch (e) {
-    setVoiceStatus('麦克风权限被拒绝', false);
+    setVoiceStatus('Microphone permission denied', false);
     return;
   }
 
@@ -740,7 +743,7 @@ async function startRecording() {
   dot.classList.add('recording');
   liveBox.style.display = 'block';
   liveBox.textContent = '';
-  setVoiceStatus('连接中…', true);
+  setVoiceStatus('Connecting...', true);
 }
 
 function stopRecording() {
@@ -755,7 +758,7 @@ function stopRecording() {
 
   micBtn.classList.remove('active');
   dot.classList.remove('recording');
-  setVoiceStatus('点击开始语音识别', false);
+  setVoiceStatus('Click to start voice recognition', false);
   liveBox.classList.remove('speaking');
 }
 
@@ -763,17 +766,17 @@ function stopRecording() {
 
 ipcRenderer.on('asr-ready', () => {
   asrReady = true;
-  setVoiceStatus('正在监听…', true);
+  setVoiceStatus('Listening...', true);
 });
 
 ipcRenderer.on('asr-speech-start', () => {
   liveBox.classList.add('speaking');
-  setVoiceStatus('检测到语音…', true);
+  setVoiceStatus('Detecting speech...', true);
 });
 
 ipcRenderer.on('asr-speech-stop', () => {
   liveBox.classList.remove('speaking');
-  setVoiceStatus('识别中…', true);
+  setVoiceStatus('Recognizing...', true);
 });
 
 ipcRenderer.on('asr-transcript-delta', (_, delta) => {
@@ -786,7 +789,7 @@ ipcRenderer.on('asr-transcript-final', (_, text) => {
   if (!text.trim()) return;
   liveBox.textContent = text;
   pendingTranscript = '';
-  setVoiceStatus('翻译中…', true);
+  setVoiceStatus('Translating...', true);
 
   // Translate the recognized text
   clearTimeout(translateDebounce);
@@ -794,13 +797,13 @@ ipcRenderer.on('asr-transcript-final', (_, text) => {
 });
 
 ipcRenderer.on('asr-error', (_, msg) => {
-  setVoiceStatus('错误: ' + msg, false);
+  setVoiceStatus('Error: ' + msg, false);
   stopRecording();
 });
 
 ipcRenderer.on('asr-closed', () => {
   if (isRecording) {
-    setVoiceStatus('连接断开', false);
+    setVoiceStatus('Connection closed', false);
     stopRecording();
   }
 });
@@ -812,12 +815,12 @@ async function translateVoice(text) {
     const result = await ipcRenderer.invoke('translate', { text, targetLang: targetLangForVoice });
     voiceTranslatedText = result;
     setVoiceOutput(result);
-    setVoiceStatus('正在监听…', true);
+    setVoiceStatus('Listening...', true);
     // Add to chat history
     addToHistory(text, result);
   } catch (e) {
-    setVoiceOutput('翻译失败：' + e.message, true);
-    setVoiceStatus('正在监听…', true);
+    setVoiceOutput('Translation failed: ' + e.message, true);
+    setVoiceStatus('Listening...', true);
   }
 }
 

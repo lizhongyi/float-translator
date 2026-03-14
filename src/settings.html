@@ -124,7 +124,7 @@ select{appearance:none;cursor:pointer;font-family:'Syne',sans-serif;font-size:11
   <div class="bar">
     <div>
       <div class="bar-title">Settings</div>
-      <div class="bar-sub">API 配置</div>
+      <div class="bar-sub">API Configuration</div>
     </div>
     <button class="x" id="closeBtn">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -138,10 +138,10 @@ select{appearance:none;cursor:pointer;font-family:'Syne',sans-serif;font-size:11
 
     <!-- Provider -->
     <div>
-      <div class="label">翻译 / 语音 提供商</div>
+      <div class="label">Translation / Voice Provider</div>
       <div class="ptabs">
         <button class="ptab active" data-p="bailian">
-          <span class="n">百炼</span><span class="b">阿里云</span>
+          <span class="n">Bailian</span><span class="b">Alibaba Cloud</span>
         </button>
         <button class="ptab" data-p="anthropic">
           <span class="n">Claude</span><span class="b">Anthropic</span>
@@ -150,7 +150,7 @@ select{appearance:none;cursor:pointer;font-family:'Syne',sans-serif;font-size:11
           <span class="n">GPT</span><span class="b">OpenAI</span>
         </button>
         <button class="ptab" data-p="custom">
-          <span class="n">自定义</span><span class="b">兼容接口</span>
+          <span class="n">Custom</span><span class="b">Compatible API</span>
         </button>
       </div>
     </div>
@@ -158,38 +158,38 @@ select{appearance:none;cursor:pointer;font-family:'Syne',sans-serif;font-size:11
     <!-- Bailian section -->
     <div class="sec on" id="sec-bailian">
       <div class="note">
-        🎙️ <strong>推荐选择</strong>：百炼同时支持语音识别（qwen3-asr-flash-realtime）与文字翻译，一个 API Key 全部搞定。
+        🎙️ <strong>Recommended</strong>: Bailian supports both speech recognition (qwen3-asr-flash-realtime) and text translation with a single API Key.
       </div>
       <div class="field">
         <label>API Key</label>
         <input type="password" id="bl-key" placeholder="sk-xxxxxxxxxxxxxxxx" autocomplete="off"/>
       </div>
       <div class="field">
-        <label>翻译模型</label>
+        <label>Translation Model</label>
         <select id="bl-model">
-          <option value="qwen-turbo">qwen-turbo（最快，推荐）</option>
-          <option value="qwen-plus">qwen-plus（均衡）</option>
-          <option value="qwen-max">qwen-max（最强）</option>
-          <option value="qwen3-235b-a22b">qwen3-235b（顶配）</option>
+          <option value="qwen-turbo">qwen-turbo (Fastest, Recommended)</option>
+          <option value="qwen-plus">qwen-plus (Balanced)</option>
+          <option value="qwen-max">qwen-max (Most Powerful)</option>
+          <option value="qwen3-235b-a22b">qwen3-235b (Premium)</option>
         </select>
       </div>
       <div class="note" style="font-size:10px;line-height:1.6">
-        语音识别固定使用 <code style="color:var(--accent)">qwen3-asr-flash-realtime</code>，无需额外配置。<br>
-        在 <a href="#" style="color:var(--accent);opacity:.7">bailian.console.aliyun.com</a> 获取 API Key。
+        Speech recognition uses <code style="color:var(--accent)">qwen3-asr-flash-realtime</code> by default, no additional configuration needed.<br>
+        Get API Key from <a href="#" style="color:var(--accent);opacity:.7">bailian.console.aliyun.com</a>.
       </div>
     </div>
 
     <!-- Anthropic section -->
     <div class="sec" id="sec-anthropic">
-      <div class="note">⚠️ Anthropic 暂不支持语音识别，语音功能将无法使用。</div>
+      <div class="note">⚠️ Anthropic does not support speech recognition, voice features will be unavailable.</div>
       <div class="field">
         <label>API Key</label>
         <input type="password" id="ac-key" placeholder="sk-ant-api03-…" autocomplete="off"/>
       </div>
       <div class="field">
-        <label>模型</label>
+        <label>Model</label>
         <select id="ac-model">
-          <option value="claude-3-haiku-20240307">claude-3-haiku（最快）</option>
+          <option value="claude-3-haiku-20240307">claude-3-haiku (Fastest)</option>
           <option value="claude-3-5-haiku-20241022">claude-3-5-haiku</option>
           <option value="claude-3-5-sonnet-20241022">claude-3-5-sonnet</option>
         </select>
@@ -198,15 +198,15 @@ select{appearance:none;cursor:pointer;font-family:'Syne',sans-serif;font-size:11
 
     <!-- OpenAI section -->
     <div class="sec" id="sec-openai">
-      <div class="note">⚠️ 语音功能需要百炼 API，OpenAI 配置下语音将不可用。</div>
+      <div class="note">⚠️ Voice features require Bailian API, voice will be unavailable with OpenAI configuration.</div>
       <div class="field">
         <label>API Key</label>
         <input type="password" id="oa-key" placeholder="sk-…" autocomplete="off"/>
       </div>
       <div class="field">
-        <label>模型</label>
+        <label>Model</label>
         <select id="oa-model">
-          <option value="gpt-4o-mini">gpt-4o-mini（推荐）</option>
+          <option value="gpt-4o-mini">gpt-4o-mini (Recommended)</option>
           <option value="gpt-4o">gpt-4o</option>
         </select>
       </div>
@@ -215,8 +215,8 @@ select{appearance:none;cursor:pointer;font-family:'Syne',sans-serif;font-size:11
     <!-- Custom section -->
     <div class="sec" id="sec-custom">
       <div class="note">
-        兼容 OpenAI 格式的任意接口：DeepSeek、Groq、SiliconFlow、本地 Ollama 等。<br>
-        语音功能仅支持百炼接口。
+        Compatible with any OpenAI-formatted API: DeepSeek, Groq, SiliconFlow, local Ollama, etc.<br>
+        Voice features only support Bailian API.
       </div>
       <div class="field">
         <label>Base URL</label>
@@ -227,7 +227,7 @@ select{appearance:none;cursor:pointer;font-family:'Syne',sans-serif;font-size:11
         <input type="password" id="cu-key" placeholder="your-api-key" autocomplete="off"/>
       </div>
       <div class="field">
-        <label>模型名称</label>
+        <label>Model Name</label>
         <input type="text" id="cu-model" placeholder="deepseek-chat"/>
       </div>
     </div>
@@ -236,7 +236,7 @@ select{appearance:none;cursor:pointer;font-family:'Syne',sans-serif;font-size:11
 
   <div class="foot">
     <span class="status" id="status"></span>
-    <button class="save" id="saveBtn">保存</button>
+    <button class="save" id="saveBtn">Save</button>
   </div>
 
 </div>
@@ -306,11 +306,11 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     config.baseUrl = document.getElementById('cu-url').value.trim();
   }
 
-  if (!config.apiKey) { showStatus('API Key 不能为空', 'err'); return; }
+  if (!config.apiKey) { showStatus('API Key cannot be empty', 'err'); return; }
 
   await ipcRenderer.invoke('save-config', config);
   ipcRenderer.send('config-updated');
-  showStatus('已保存 ✓', 'ok');
+  showStatus('Saved ✓', 'ok');
   setTimeout(() => ipcRenderer.send('close-settings'), 800);
 });
 

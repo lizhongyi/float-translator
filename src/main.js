@@ -104,7 +104,7 @@ ipcMain.on('resize-window', (event, width, height) => {
 
 ipcMain.handle('translate', async (_, { text, targetLang }) => {
   const config = store.get('config') || {};
-  if (!config.apiKey) throw new Error('请先在设置中配置 API Key');
+  if (!config.apiKey) throw new Error('Please configure API Key in settings first');
   return await callTranslateAPI(config, text, targetLang);
 });
 
@@ -117,7 +117,7 @@ let asrActive = false;
 ipcMain.on('asr-start', (event, { recognitionLang, targetLang }) => {
   const config = store.get('config') || {};
   if (!config.apiKey) {
-    event.sender.send('asr-error', '请先配置 API Key');
+    event.sender.send('asr-error', 'Please configure API Key first');
     return;
   }
   startASR(event.sender, config.apiKey, recognitionLang, targetLang);
@@ -151,7 +151,7 @@ function startASR(sender, apiKey, recognitionLang, targetLang) {
   try {
     WebSocket = require('ws');
   } catch (e) {
-    sender.send('asr-error', '无法加载 ws 模块，请确认已安装: npm install ws');
+    sender.send('asr-error', 'Failed to load ws module, please install: npm install ws');
     return;
   }
 
@@ -163,7 +163,7 @@ function startASR(sender, apiKey, recognitionLang, targetLang) {
       }
     });
   } catch (e) {
-    sender.send('asr-error', '无法创建 WebSocket: ' + e.message);
+    sender.send('asr-error', 'Failed to create WebSocket: ' + e.message);
     return;
   }
 
@@ -231,7 +231,7 @@ function startASR(sender, apiKey, recognitionLang, targetLang) {
 
   asrWs.on('error', (err) => {
     console.error('[ASR] WebSocket error:', err);
-    sender.send('asr-error', '连接错误: ' + (err.message || '未知错误'));
+    sender.send('asr-error', 'Connection error: ' + (err.message || 'Unknown error'));
     asrActive = false;
   });
 
@@ -292,7 +292,7 @@ function stopASR() {
 
 async function callTranslateAPI(config, text, targetLang) {
   const langMap = {
-    zh: '中文（简体）', en: 'English', ja: '日本語',
+    zh: 'Chinese (Simplified)', en: 'English', ja: '日本語',
     ko: '한국어', fr: 'Français', de: 'Deutsch',
     es: 'Español', ru: 'Русский', pt: 'Português', it: 'Italiano'
   };
@@ -341,9 +341,9 @@ async function callTranslateAPI(config, text, targetLang) {
           const result = provider === 'anthropic'
             ? json.content?.[0]?.text
             : json.choices?.[0]?.message?.content;
-          resolve(result || '翻译失败');
+          resolve(result || 'Translation failed');
         } catch (e) {
-          reject(new Error('响应解析失败'));
+          reject(new Error('Response parsing failed'));
         }
       });
     });
