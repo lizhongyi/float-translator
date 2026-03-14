@@ -84,7 +84,7 @@ ipcMain.handle('save-config', (_, config) => { store.set('config', config); retu
 
 ipcMain.on('open-settings', () => createSettingsWindow());
 ipcMain.on('close-settings', () => settingsWindow?.close());
-ipcMain.on('close-main', () => mainWindow?.hide());
+ipcMain.on('close-main', () => { mainWindow?.close(); app.quit(); });
 ipcMain.on('config-updated', () => mainWindow?.webContents.send('config-updated'));
 ipcMain.on('resize-window', (event, width, height) => {
   if (mainWindow) {
