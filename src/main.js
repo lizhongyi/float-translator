@@ -111,13 +111,13 @@ ipcMain.handle('translate', async (_, { text, targetLang }) => {
 let asrWs = null;
 let asrActive = false;
 
-ipcMain.on('asr-start', (event, targetLang) => {
+ipcMain.on('asr-start', (event, { recognitionLang, targetLang }) => {
   const config = store.get('config') || {};
   if (!config.apiKey) {
     event.sender.send('asr-error', '请先配置 API Key');
     return;
   }
-  startASR(event.sender, config.apiKey, targetLang);
+  startASR(event.sender, config.apiKey, recognitionLang, targetLang);
 });
 
 ipcMain.on('asr-audio-chunk', (_, chunk) => {
@@ -138,7 +138,7 @@ ipcMain.on('asr-stop', () => {
   stopASR();
 });
 
-function startASR(sender, apiKey, targetLang) {
+function startASR(sender, apiKey, recognitionLang, targetLang) {
   if (asrWs) stopASR();
 
   // Use live translation model
@@ -166,29 +166,45 @@ function startASR(sender, apiKey, targetLang) {
 
   asrWs.on('open', () => {
     asrActive = true;
-    // Init session with VAD and translation enabled (correct format from docs)
+    // Init session with VAD and translation enabled
     try {
-      // Language codes for translation
-      const langMap = {
+      // Language codes for recognition (input)
+      const recognitionLangMap = {
+        'zh-CN': 'zh', 'en-US': 'en', 'ja-JP': 'ja',
+        'ko-KR': 'ko', 'fr-FR': 'fr', 'de-DE': 'de',
+        'es-ES': 'es', 'ru-RU': 'ru'
+      };
+      
+      // If auto, don't set language so server will auto-detect
+      const inputLanguage = recognitionLang === 'auto' ? null : (recognitionLangMap[recognitionLang] || 'zh');
+      
+      // Language codes for translation (output)
+      const translationLangMap = {
         'zh': 'zh', 'en': 'en', 'ja': 'ja',
         'ko': 'ko', 'fr': 'fr', 'de': 'de',
         'es': 'es', 'ru': 'ru'
       };
-      const targetLanguage = langMap[targetLang] || 'en';
+      const outputLanguage = translationLangMap[targetLang] || 'zh';
+      
+      let transcriptionConfig = {
+        model: 'qwen3-asr-flash-realtime'
+      };
+      if (inputLanguage) {
+        transcriptionConfig.language = inputLanguage;
+      }
+      
       let sessionUpdate = {
         type: 'session.update',
         session: {
           modalities: ['text', 'audio'],
           input_audio_format: 'pcm16',
-          input_audio_transcription: {
-            model: 'qwen3-asr-flash-realtime'
-          },
+          input_audio_transcription: transcriptionConfig,
           translation: {
-            language: targetLanguage  // Target language for translation
+            language: outputLanguage  // Target language for translation
           },
           turn_detection: {
             type: 'server_vad',
-            silence_duration_ms: 600,
+            silence_duration_ms: 400,
             threshold: 0.5
           }
         }

@@ -221,6 +221,17 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
 }
 .voice-status.active{color:var(--red)}
 
+.voice-lang-select{
+  font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  padding:3px 10px;border-radius:20px;
+  border:1px solid var(--border);background:rgba(255,255,255,.04);
+  color:var(--muted);cursor:pointer;outline:none;
+  font-family:'Syne',sans-serif;appearance:none;
+  transition:all .15s;
+}
+.voice-lang-select:focus{border-color:rgba(126,255,245,.3);color:var(--accent)}
+.voice-lang-row{display:flex;align-items:center;gap:6px}
+
 /* live transcript box */
 .live-box{
   width:100%;background:rgba(255,255,255,.03);
@@ -301,8 +312,8 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
     <div class="spacer"></div>
   </div>
 
-  <!-- Lang row (shared) -->
-  <div class="lang-row">
+  <!-- Lang row (text mode) -->
+  <div class="lang-row" id="textLangRow">
     <span style="font-size:10px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase">Auto</span>
     <span class="arr">→</span>
     <select class="lang-select" id="targetLang">
@@ -357,6 +368,30 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
           <path d="M2 8s0 6 6 6 6-6 6-6M8 14v2"/>
         </svg>
       </button>
+      <div class="voice-lang-row">
+        <select class="voice-lang-select" id="voiceLang">
+          <option value="auto">Auto 自动</option>
+          <option value="zh-CN">ZH 中文</option>
+          <option value="en-US">EN 英文</option>
+          <option value="ja-JP">JA 日语</option>
+          <option value="ko-KR">KO 韩语</option>
+          <option value="fr-FR">FR 法语</option>
+          <option value="de-DE">DE 德语</option>
+          <option value="es-ES">ES 西班牙</option>
+          <option value="ru-RU">RU 俄语</option>
+        </select>
+        <span class="arr">→</span>
+        <select class="voice-lang-select" id="voiceTargetLang">
+          <option value="zh">ZH 中文</option>
+          <option value="en">EN 英文</option>
+          <option value="ja">JA 日语</option>
+          <option value="ko">KO 韩语</option>
+          <option value="fr">FR 法语</option>
+          <option value="de">DE 德语</option>
+          <option value="es">ES 西班牙</option>
+          <option value="ru">RU 俄语</option>
+        </select>
+      </div>
       <span class="voice-status" id="voiceStatus">点击开始语音识别</span>
     </div>
 
@@ -447,12 +482,25 @@ const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 const settingsBtn = document.getElementById('settingsBtn');
 const closeBtn = document.getElementById('closeBtn');
 const targetLang = document.getElementById('targetLang');
+const textLangRow = document.getElementById('textLangRow');
+const voiceLang = document.getElementById('voiceLang');
+const voiceTargetLang = document.getElementById('voiceTargetLang');
 
 // ── Load saved prefs ───────────────────────────────────────────────────────
 
 targetLang.value = localStorage.getItem('targetLang') || 'en';
 targetLang.addEventListener('change', () => {
   localStorage.setItem('targetLang', targetLang.value);
+});
+
+voiceLang.value = localStorage.getItem('voiceLang') || 'auto';
+voiceLang.addEventListener('change', () => {
+  localStorage.setItem('voiceLang', voiceLang.value);
+});
+
+voiceTargetLang.value = localStorage.getItem('voiceTargetLang') || 'zh';
+voiceTargetLang.addEventListener('change', () => {
+  localStorage.setItem('voiceTargetLang', voiceTargetLang.value);
 });
 
 // ── Tab switching ──────────────────────────────────────────────────────────
@@ -467,6 +515,7 @@ function switchMode(m) {
     tabVoice.classList.remove('active');
     textPanel.classList.remove('hidden');
     voicePanel.classList.add('hidden');
+    textLangRow.style.display = 'flex';
     hintText.textContent = '⌘↵ 翻译';
     if (isRecording) stopRecording();
     ipcRenderer.send('resize-window', 260);
@@ -475,6 +524,7 @@ function switchMode(m) {
     tabText.classList.remove('active');
     voicePanel.classList.remove('hidden');
     textPanel.classList.add('hidden');
+    textLangRow.style.display = 'none';
     hintText.textContent = '点击麦克风开始';
     ipcRenderer.send('resize-window', 700);
   }
@@ -584,8 +634,10 @@ async function startRecording() {
   source.connect(processor);
   processor.connect(audioContext.destination);
 
-  // Connect to ASR WebSocket with target language
-  ipcRenderer.send('asr-start', targetLang.value);
+  // Connect to ASR WebSocket with recognition language and target language
+  const recLang = localStorage.getItem('voiceLang') || 'auto';
+  const tgtLang = localStorage.getItem('voiceTargetLang') || 'zh';
+  ipcRenderer.send('asr-start', { recognitionLang: recLang, targetLang: tgtLang });
 
   isRecording = true;
   micBtn.classList.add('active');
@@ -659,8 +711,9 @@ ipcRenderer.on('asr-closed', () => {
 
 async function translateVoice(text) {
   setVoiceOutputLoading();
+  const targetLangForVoice = localStorage.getItem('voiceTargetLang') || 'zh';
   try {
-    const result = await ipcRenderer.invoke('translate', { text, targetLang: targetLang.value });
+    const result = await ipcRenderer.invoke('translate', { text, targetLang: targetLangForVoice });
     voiceTranslatedText = result;
     setVoiceOutput(result);
     setVoiceStatus('正在监听…', true);
