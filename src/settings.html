@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Settings</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600&family=DM+Mono:wght@300;400&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:rgba(9,9,13,0.94);
+  --border:rgba(255,255,255,0.07);
+  --accent:#7EFFF5;
+  --accent-dim:rgba(126,255,245,0.1);
+  --text:rgba(255,255,255,0.9);
+  --muted:rgba(255,255,255,0.38);
+  --dim:rgba(255,255,255,0.16);
+  --ok:#7EFFF5;
+  --err:#FF6B8A;
+  --r:18px;
+}
+
+html,body{width:100%;height:100%;background:transparent;overflow:hidden;
+  font-family:'Syne',-apple-system,sans-serif}
+
+.app{
+  width:100%;height:100vh;
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--r);
+  backdrop-filter:blur(60px);-webkit-backdrop-filter:blur(60px);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+
+.bar{
+  -webkit-app-region:drag;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 20px 14px;flex-shrink:0;
+}
+.bar-title{font-size:15px;font-weight:600;color:var(--text);letter-spacing:-.01em}
+.bar-sub{font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.x{
+  -webkit-app-region:no-drag;
+  width:28px;height:28px;border:1px solid var(--border);
+  background:rgba(255,255,255,.04);border-radius:8px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--muted);transition:all .15s;
+}
+.x:hover{background:rgba(255,255,255,.09);color:var(--text)}
+.x svg{width:13px;height:13px}
+
+.hdiv{height:1px;background:var(--border);margin:0 20px}
+
+.body{flex:1;padding:18px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:18px}
+
+/* Provider tabs */
+.label{font-size:9px;font-weight:600;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+
+.ptabs{display:flex;gap:5px}
+.ptab{
+  flex:1;padding:9px 6px;border-radius:10px;
+  border:1px solid var(--border);background:transparent;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  transition:all .15s;font-family:'Syne',sans-serif;
+}
+.ptab .n{font-size:12px;font-weight:600;color:var(--muted)}
+.ptab .b{font-size:8px;letter-spacing:.06em;color:var(--dim);text-transform:uppercase}
+.ptab.active{background:var(--accent-dim);border-color:rgba(126,255,245,.28)}
+.ptab.active .n{color:var(--accent)}
+.ptab.active .b{color:rgba(126,255,245,.5)}
+
+/* Sections */
+.sec{display:none;flex-direction:column;gap:13px}
+.sec.on{display:flex}
+
+.field{display:flex;flex-direction:column;gap:5px}
+label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+
+input,select{
+  background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:9px;
+  color:var(--text);font-size:12px;font-family:'DM Mono',monospace;font-weight:300;
+  padding:9px 13px;outline:none;transition:border-color .2s;
+  caret-color:var(--accent);width:100%;
+}
+input::placeholder{color:rgba(255,255,255,.18);font-family:'Syne',sans-serif}
+input:focus,select:focus{border-color:rgba(126,255,245,.3)}
+select{appearance:none;cursor:pointer;font-family:'Syne',sans-serif;font-size:11px}
+
+.note{
+  font-size:10px;color:var(--muted);line-height:1.55;
+  padding:9px 11px;background:rgba(126,255,245,.04);
+  border:1px solid rgba(126,255,245,.1);border-radius:8px;
+}
+
+/* Divider */
+.sdiv{height:1px;background:var(--border);flex-shrink:0}
+
+/* Footer */
+.foot{
+  padding:14px 20px;flex-shrink:0;
+  border-top:1px solid var(--border);
+  display:flex;gap:10px;align-items:center;
+}
+.status{flex:1;font-size:11px;color:var(--muted);transition:all .3s}
+.status.ok{color:var(--ok)}
+.status.err{color:var(--err)}
+
+.save{
+  padding:9px 22px;border-radius:9px;border:none;
+  background:var(--accent);color:#0a0a0e;
+  font-size:12px;font-weight:600;font-family:'Syne',sans-serif;
+  cursor:pointer;transition:all .2s;letter-spacing:.02em;
+}
+.save:hover{opacity:.85;transform:translateY(-1px)}
+.save:active{transform:none}
+
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="bar">
+    <div>
+      <div class="bar-title">Settings</div>
+      <div class="bar-sub">API 配置</div>
+    </div>
+    <button class="x" id="closeBtn">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <line x1="3" y1="3" x2="13" y2="13"/><line x1="13" y1="3" x2="3" y2="13"/>
+      </svg>
+    </button>
+  </div>
+  <div class="hdiv"></div>
+
+  <div class="body">
+
+    <!-- Provider -->
+    <div>
+      <div class="label">翻译 / 语音 提供商</div>
+      <div class="ptabs">
+        <button class="ptab active" data-p="bailian">
+          <span class="n">百炼</span><span class="b">阿里云</span>
+        </button>
+        <button class="ptab" data-p="anthropic">
+          <span class="n">Claude</span><span class="b">Anthropic</span>
+        </button>
+        <button class="ptab" data-p="openai">
+          <span class="n">GPT</span><span class="b">OpenAI</span>
+        </button>
+        <button class="ptab" data-p="custom">
+          <span class="n">自定义</span><span class="b">兼容接口</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bailian section -->
+    <div class="sec on" id="sec-bailian">
+      <div class="note">
+        🎙️ <strong>推荐选择</strong>：百炼同时支持语音识别（qwen3-asr-flash-realtime）与文字翻译，一个 API Key 全部搞定。
+      </div>
+      <div class="field">
+        <label>API Key</label>
+        <input type="password" id="bl-key" placeholder="sk-xxxxxxxxxxxxxxxx" autocomplete="off"/>
+      </div>
+      <div class="field">
+        <label>翻译模型</label>
+        <select id="bl-model">
+          <option value="qwen-turbo">qwen-turbo（最快，推荐）</option>
+          <option value="qwen-plus">qwen-plus（均衡）</option>
+          <option value="qwen-max">qwen-max（最强）</option>
+          <option value="qwen3-235b-a22b">qwen3-235b（顶配）</option>
+        </select>
+      </div>
+      <div class="note" style="font-size:10px;line-height:1.6">
+        语音识别固定使用 <code style="color:var(--accent)">qwen3-asr-flash-realtime</code>，无需额外配置。<br>
+        在 <a href="#" style="color:var(--accent);opacity:.7">bailian.console.aliyun.com</a> 获取 API Key。
+      </div>
+    </div>
+
+    <!-- Anthropic section -->
+    <div class="sec" id="sec-anthropic">
+      <div class="note">⚠️ Anthropic 暂不支持语音识别，语音功能将无法使用。</div>
+      <div class="field">
+        <label>API Key</label>
+        <input type="password" id="ac-key" placeholder="sk-ant-api03-…" autocomplete="off"/>
+      </div>
+      <div class="field">
+        <label>模型</label>
+        <select id="ac-model">
+          <option value="claude-3-haiku-20240307">claude-3-haiku（最快）</option>
+          <option value="claude-3-5-haiku-20241022">claude-3-5-haiku</option>
+          <option value="claude-3-5-sonnet-20241022">claude-3-5-sonnet</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- OpenAI section -->
+    <div class="sec" id="sec-openai">
+      <div class="note">⚠️ 语音功能需要百炼 API，OpenAI 配置下语音将不可用。</div>
+      <div class="field">
+        <label>API Key</label>
+        <input type="password" id="oa-key" placeholder="sk-…" autocomplete="off"/>
+      </div>
+      <div class="field">
+        <label>模型</label>
+        <select id="oa-model">
+          <option value="gpt-4o-mini">gpt-4o-mini（推荐）</option>
+          <option value="gpt-4o">gpt-4o</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Custom section -->
+    <div class="sec" id="sec-custom">
+      <div class="note">
+        兼容 OpenAI 格式的任意接口：DeepSeek、Groq、SiliconFlow、本地 Ollama 等。<br>
+        语音功能仅支持百炼接口。
+      </div>
+      <div class="field">
+        <label>Base URL</label>
+        <input type="text" id="cu-url" placeholder="https://api.deepseek.com/v1"/>
+      </div>
+      <div class="field">
+        <label>API Key</label>
+        <input type="password" id="cu-key" placeholder="your-api-key" autocomplete="off"/>
+      </div>
+      <div class="field">
+        <label>模型名称</label>
+        <input type="text" id="cu-model" placeholder="deepseek-chat"/>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    <span class="status" id="status"></span>
+    <button class="save" id="saveBtn">保存</button>
+  </div>
+
+</div>
+
+<script>
+const { ipcRenderer } = require('electron');
+
+let curP = 'bailian';
+
+// Tab switching
+document.querySelectorAll('.ptab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.ptab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.sec').forEach(x => x.classList.remove('on'));
+    t.classList.add('active');
+    curP = t.dataset.p;
+    document.getElementById(`sec-${curP}`).classList.add('on');
+  });
+});
+
+// Load config
+ipcRenderer.invoke('get-config').then(c => {
+  if (!c || !c.provider) return;
+  const p = c.provider;
+  curP = p;
+  document.querySelectorAll('.ptab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.sec').forEach(x => x.classList.remove('on'));
+  const tab = document.querySelector(`[data-p="${p}"]`);
+  if (tab) tab.classList.add('active');
+  const sec = document.getElementById(`sec-${p}`);
+  if (sec) sec.classList.add('on');
+
+  if (p === 'bailian') {
+    if (c.apiKey) document.getElementById('bl-key').value = c.apiKey;
+    if (c.model) document.getElementById('bl-model').value = c.model;
+  } else if (p === 'anthropic') {
+    if (c.apiKey) document.getElementById('ac-key').value = c.apiKey;
+    if (c.model) document.getElementById('ac-model').value = c.model;
+  } else if (p === 'openai') {
+    if (c.apiKey) document.getElementById('oa-key').value = c.apiKey;
+    if (c.model) document.getElementById('oa-model').value = c.model;
+  } else if (p === 'custom') {
+    if (c.apiKey) document.getElementById('cu-key').value = c.apiKey;
+    if (c.model) document.getElementById('cu-model').value = c.model;
+    if (c.baseUrl) document.getElementById('cu-url').value = c.baseUrl;
+  }
+});
+
+document.getElementById('closeBtn').addEventListener('click', () => ipcRenderer.send('close-settings'));
+
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  let config = { provider: curP };
+
+  if (curP === 'bailian') {
+    config.apiKey = document.getElementById('bl-key').value.trim();
+    config.model = document.getElementById('bl-model').value;
+    config.baseUrl = 'https://dashscope.aliyuncs.com/compatible-mode/v1';
+  } else if (curP === 'anthropic') {
+    config.apiKey = document.getElementById('ac-key').value.trim();
+    config.model = document.getElementById('ac-model').value;
+  } else if (curP === 'openai') {
+    config.apiKey = document.getElementById('oa-key').value.trim();
+    config.model = document.getElementById('oa-model').value;
+  } else {
+    config.apiKey = document.getElementById('cu-key').value.trim();
+    config.model = document.getElementById('cu-model').value.trim();
+    config.baseUrl = document.getElementById('cu-url').value.trim();
+  }
+
+  if (!config.apiKey) { showStatus('API Key 不能为空', 'err'); return; }
+
+  await ipcRenderer.invoke('save-config', config);
+  ipcRenderer.send('config-updated');
+  showStatus('已保存 ✓', 'ok');
+  setTimeout(() => ipcRenderer.send('close-settings'), 800);
+});
+
+function showStatus(msg, cls) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status ' + cls;
+  setTimeout(() => { el.textContent = ''; el.className = 'status'; }, 3000);
+}
+</script>
+</body>
+</html>
