@@ -102,6 +102,7 @@ html,body{width:100%;height:100%;background:transparent;overflow:hidden;
 .arr{color:var(--dim);font-size:10px}
 .spacer{flex:1}
 .hint{font-size:9px;color:var(--dim);letter-spacing:.04em}
+.hidden{display:none !important}
 
 /* ── Content panels ── */
 .panel{flex:1;display:flex;flex-direction:column;padding:0 14px 14px;gap:8px;min-height:0;
@@ -265,6 +266,68 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
 .dots span:nth-child(3){animation-delay:.4s}
 @keyframes db{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
 
+/* ── Caption Mode Button ── */
+  .caption-mode-btn{
+    margin-top:8px;padding:4px 8px;
+    background:rgba(126,255,245,.1);border:1px solid rgba(126,255,245,.3);
+    border-radius:4px;color:var(--accent);font-size:11px;
+    cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:4px
+  }
+  .caption-mode-btn:hover{background:rgba(126,255,255,.2);border-color:rgba(126,255,245,.5)}
+  .caption-mode-btn svg{width:12px;height:12px}
+
+.voice-panel.caption-mode .voice-center,
+.voice-panel.caption-mode .voice-div-row,
+.voice-panel.caption-mode .out-wrap:last-child,
+.voice-panel.caption-mode .copy-btn{display:none}
+
+.voice-panel.caption-mode{
+  flex:0 0 100px !important;
+  background:transparent !important;
+  padding:0 10px !important;
+}
+
+/* Hide tabs in caption mode */
+.app.caption-mode .tabs{
+  display:none !important;
+}
+
+/* Hide title bar elements in caption mode */
+.app.caption-mode .bar-right #settingsBtn,
+.app.caption-mode .bar-right #closeBtn{
+  display:none !important;
+}
+
+/* Show restore button in caption mode */
+.app.caption-mode .bar-right #restoreBtn{
+  display:flex !important;
+}
+
+.voice-panel.caption-mode .live-box{
+  display:block !important;
+  margin:6px 0;
+  font-size:13px;
+  max-height:60px;
+  overflow-y:auto;
+  background:rgba(255,255,255,.03) !important;
+  border:1px solid rgba(255,255,255,.1) !important;
+  border-radius:6px !important;
+  padding:6px !important;
+}
+
+.voice-panel.caption-mode .out-wrap[style*="flex:1"]{
+  flex:1 !important;
+  min-height:60px;
+}
+
+.voice-panel.caption-mode .voice-out-box{
+  font-size:14px;
+  padding:8px;
+  background:rgba(255,255,255,.03) !important;
+  border:1px solid rgba(255,255,255,.1) !important;
+  border-radius:6px !important;
+}
+
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
@@ -280,6 +343,11 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
       <span class="logo">Translator</span>
     </div>
     <div class="bar-right">
+      <button class="ibtn hidden" id="restoreBtn" title="恢复完整界面">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M10 12l-4-4 4-4M14 8H4"/>
+        </svg>
+      </button>
       <button class="ibtn" id="settingsBtn" title="Settings">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
           <circle cx="8" cy="8" r="2.5"/>
@@ -361,7 +429,7 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
 
   <!-- ── VOICE PANEL ── -->
   <div class="voice-panel hidden" id="voicePanel">
-    <div class="voice-center">
+    <div class="voice-center" id="voiceCenter">
       <button class="mic-btn" id="micBtn">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
           <rect x="5" y="1" width="6" height="9" rx="3"/>
@@ -393,6 +461,16 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
         </select>
       </div>
       <span class="voice-status" id="voiceStatus">点击开始语音识别</span>
+      <button class="caption-mode-btn" id="captionModeBtn" title="进入字幕模式">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="3" width="12" height="7" rx="1"/>
+          <line x1="4" y1="7" x2="7" y2="7"/>
+          <line x1="9" y1="7" x2="12" y2="7"/>
+          <line x1="4" y1="10" x2="6" y2="10"/>
+          <line x1="8" y1="10" x2="12" y2="10"/>
+        </svg>
+        字幕模式
+      </button>
     </div>
 
     <!-- Live transcript -->
@@ -443,6 +521,7 @@ let translating = false;
 let translatedText = '';
 let voiceTranslatedText = '';
 let isRecording = false;
+let captionMode = false;
 
 // Chat history
 let chatHistory = [];
@@ -485,6 +564,9 @@ const targetLang = document.getElementById('targetLang');
 const textLangRow = document.getElementById('textLangRow');
 const voiceLang = document.getElementById('voiceLang');
 const voiceTargetLang = document.getElementById('voiceTargetLang');
+const voiceCenter = document.getElementById('voiceCenter');
+const captionModeBtn = document.getElementById('captionModeBtn');
+const restoreBtn = document.getElementById('restoreBtn');
 
 // ── Load saved prefs ───────────────────────────────────────────────────────
 
@@ -596,6 +678,20 @@ function setOutput(content, state = '') {
 
 micBtn.addEventListener('click', () => {
   isRecording ? stopRecording() : startRecording();
+});
+
+captionModeBtn.addEventListener('click', () => {
+  captionMode = true;
+  voicePanel.classList.add('caption-mode');
+  document.querySelector('.app').classList.add('caption-mode');
+  ipcRenderer.send('resize-window', 600, 160);
+});
+
+restoreBtn.addEventListener('click', () => {
+  captionMode = false;
+  voicePanel.classList.remove('caption-mode');
+  document.querySelector('.app').classList.remove('caption-mode');
+  ipcRenderer.send('resize-window', 400, 700);
 });
 
 async function startRecording() {

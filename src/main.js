@@ -26,7 +26,7 @@ function createMainWindow() {
     alwaysOnTop: true,
     resizable: true,
     minWidth: 320,
-    minHeight: 220,
+    minHeight: 140,
     maxWidth: 720,
     skipTaskbar: true,
     hasShadow: true,
@@ -86,13 +86,16 @@ ipcMain.on('open-settings', () => createSettingsWindow());
 ipcMain.on('close-settings', () => settingsWindow?.close());
 ipcMain.on('close-main', () => mainWindow?.hide());
 ipcMain.on('config-updated', () => mainWindow?.webContents.send('config-updated'));
-ipcMain.on('resize-window', (event, height) => {
+ipcMain.on('resize-window', (event, width, height) => {
   if (mainWindow) {
-    const currentSize = mainWindow.getSize();
-    if (height === 700 && currentSize[1] === 260) {
-      mainWindow.setSize(currentSize[0], 700);
-    } else if (height === 260 && currentSize[1] === 700) {
-      mainWindow.setSize(currentSize[0], 260);
+    if (width && height) {
+      const { width: screenWidth } = screen.getPrimaryDisplay().workAreaSize;
+      const newX = screenWidth - width - 40; // 40px margin from right edge
+      mainWindow.setSize(width, height);
+      mainWindow.setPosition(newX, 60);
+    } else if (height) {
+      const currentSize = mainWindow.getSize();
+      mainWindow.setSize(currentSize[0], height);
     }
   }
 });
