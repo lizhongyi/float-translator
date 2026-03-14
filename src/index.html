@@ -177,22 +177,22 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
 .copy-btn svg{width:12px;height:12px}
 
 /* ── Voice Panel ── */
-.voice-panel{flex:1;display:flex;flex-direction:column;padding:0 14px 14px;gap:8px;min-height:0}
+.voice-panel{flex:0 0 550px;display:flex;flex-direction:column;padding:0 14px 14px;gap:8px}
 .voice-panel.hidden{display:none}
 
 .voice-center{
-  flex:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:14px;
+  flex:0 0 80px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;
 }
 
 .mic-btn{
-  width:64px;height:64px;border-radius:50%;border:none;cursor:pointer;
+  width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   background:rgba(255,255,255,.06);
   border:1.5px solid var(--border);
   transition:all .25s;position:relative;
 }
-.mic-btn svg{width:26px;height:26px;color:var(--muted);transition:all .25s}
+.mic-btn svg{width:20px;height:20px;color:var(--muted);transition:all .25s}
 .mic-btn:hover{background:rgba(255,255,255,.1);border-color:var(--dim)}
 .mic-btn:hover svg{color:var(--text)}
 .mic-btn.active{
@@ -391,8 +391,8 @@ textarea:not(:placeholder-shown) + .x-btn{display:flex}
       <div class="div-line"></div>
     </div>
 
-    <div class="out-wrap" style="flex:1;min-height:100px">
-      <div class="voice-out-box" id="historyBox" style="overflow-y:auto;max-height:200px;font-size:11px"></div>
+    <div class="out-wrap" style="flex:0 0 300px">
+      <div class="voice-out-box" id="historyBox" style="overflow-y:auto;height:100%;font-size:11px"></div>
     </div>
   </div>
 
@@ -469,12 +469,14 @@ function switchMode(m) {
     voicePanel.classList.add('hidden');
     hintText.textContent = '⌘↵ 翻译';
     if (isRecording) stopRecording();
+    ipcRenderer.send('resize-window', 260);
   } else {
     tabVoice.classList.add('active');
     tabText.classList.remove('active');
     voicePanel.classList.remove('hidden');
     textPanel.classList.add('hidden');
     hintText.textContent = '点击麦克风开始';
+    ipcRenderer.send('resize-window', 700);
   }
 }
 
@@ -701,7 +703,9 @@ function renderHistory() {
       <div style="color:var(--accent)">${item.target}</div>
     </div>`
   ).join('');
-  historyBox.scrollTop = historyBox.scrollHeight;
+  setTimeout(() => {
+    historyBox.scrollTop = historyBox.scrollHeight;
+  }, 50);
 }
 
 function addToHistory(source, target) {

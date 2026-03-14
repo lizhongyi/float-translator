@@ -86,6 +86,16 @@ ipcMain.on('open-settings', () => createSettingsWindow());
 ipcMain.on('close-settings', () => settingsWindow?.close());
 ipcMain.on('close-main', () => mainWindow?.hide());
 ipcMain.on('config-updated', () => mainWindow?.webContents.send('config-updated'));
+ipcMain.on('resize-window', (event, height) => {
+  if (mainWindow) {
+    const currentSize = mainWindow.getSize();
+    if (height === 700 && currentSize[1] === 260) {
+      mainWindow.setSize(currentSize[0], 700);
+    } else if (height === 260 && currentSize[1] === 700) {
+      mainWindow.setSize(currentSize[0], 260);
+    }
+  }
+});
 
 // ─── IPC: Text Translation ────────────────────────────────────────────────────
 
@@ -156,7 +166,6 @@ function startASR(sender, apiKey, targetLang) {
 
   asrWs.on('open', () => {
     asrActive = true;
-    console.log('[ASR] WebSocket connected');
     // Init session with VAD and translation enabled (correct format from docs)
     try {
       // Language codes for translation
@@ -184,9 +193,7 @@ function startASR(sender, apiKey, targetLang) {
           }
         }
       };
-      console.log('[ASR] Session update:', sessionUpdate);
       asrWs.send(JSON.stringify(sessionUpdate));
-      console.log('[ASR] Session update sent with translation to:', targetLanguage);
     } catch (e) {
       console.error('[ASR] Failed to send session update:', e);
     }
@@ -198,7 +205,6 @@ function startASR(sender, apiKey, targetLang) {
       const msg = JSON.parse(data.toString());
     
       if (msg.response && msg.response.output) {
-        console.log('[ASR] Response output:', msg.response.output);
       }
       handleASRMessage(sender, msg);
     } catch (e) {}
@@ -211,27 +217,23 @@ function startASR(sender, apiKey, targetLang) {
   });
 
   asrWs.on('close', (code, reason) => {
-    console.log('[ASR] WebSocket closed:', code, reason?.toString());
     asrActive = false;
     sender.send('asr-closed');
   });
 }
 
 function handleASRMessage(sender, msg) {
-  console.log('[ASR] Received message type:', msg.type,'---------',msg);
   
   switch (msg.type) {
     case 'conversation.item.input_audio_transcription.delta':
       // Incremental transcript (source language)
       if (msg.delta) {
-        console.log('[ASR] Transcript delta:', msg.delta);
         sender.send('asr-transcript-delta', msg.delta);
       }
       break;
     case 'conversation.item.input_audio_transcription.completed':
       // Final transcript (source language)
       if (msg.transcript) {
-        console.log('[ASR] Transcript final:', msg.transcript);
         sender.send('asr-transcript-final', msg.transcript);
       }
       break;
@@ -239,7 +241,6 @@ function handleASRMessage(sender, msg) {
       // Final translation result
       if (msg.response?.output && msg.response.output.length > 0) {
         const item = msg.response.output[0];
-        console.log('[ASR] Translation result:', item);
         if (item.content && item.content.length > 0 && item.content[0].transcript) {
           sender.send('asr-translation-final', item.content[0].transcript);
         }
