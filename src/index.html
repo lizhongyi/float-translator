@@ -611,7 +611,7 @@ function switchMode(m) {
     textPanel.classList.add('hidden');
     textLangRow.style.display = 'none';
     hintText.textContent = 'Click microphone to start';
-    ipcRenderer.send('resize-window', 700);
+    ipcRenderer.send('resize-window', undefined, 700);
   }
 }
 
