@@ -733,7 +733,7 @@ async function startRecording() {
   source.connect(processor);
   processor.connect(audioContext.destination);
 
-  // Connect to ASR WebSocket with recognition language and target language
+  // Connect to ASR HTTP streaming with recognition language and target language
   const recLang = localStorage.getItem('voiceLang') || 'auto';
   const tgtLang = localStorage.getItem('voiceTargetLang') || 'zh';
   ipcRenderer.send('asr-start', { recognitionLang: recLang, targetLang: tgtLang });

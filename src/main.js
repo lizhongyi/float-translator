@@ -108,11 +108,13 @@ ipcMain.handle('translate', async (_, { text, targetLang }) => {
   return await callTranslateAPI(config, text, targetLang);
 });
 
-// ─── IPC: Voice Recognition (WebSocket via main process) ──────────────────────
-// We manage the WebSocket in the main process to avoid renderer sandbox issues.
+// ─── IPC: Voice Recognition (HTTP/2 SSE via main process) ──────────────────────
+// We manage the HTTP streaming in the main process to avoid renderer sandbox issues.
 
-let asrWs = null;
+let asrHttpStream = null;
 let asrActive = false;
+let audioBufferQueue = [];
+let isStreaming = false;
 
 ipcMain.on('asr-start', (event, { recognitionLang, targetLang }) => {
   const config = store.get('config') || {};
@@ -124,15 +126,12 @@ ipcMain.on('asr-start', (event, { recognitionLang, targetLang }) => {
 });
 
 ipcMain.on('asr-audio-chunk', (_, chunk) => {
-  if (asrWs && asrWs.readyState === 1 && asrActive) {
+  if (asrActive && isStreaming) {
     try {
-      const b64 = Buffer.from(chunk).toString('base64');
-      asrWs.send(JSON.stringify({
-        type: 'input_audio_buffer.append',
-        audio: b64
-      }));
+      // Queue audio chunks for streaming
+      audioBufferQueue.push(chunk);
     } catch (e) {
-      console.error('[ASR] Failed to send audio chunk:', e);
+      console.error('[ASR] Failed to queue audio chunk:', e);
     }
   }
 });
@@ -141,104 +140,124 @@ ipcMain.on('asr-stop', () => {
   stopASR();
 });
 
-function startASR(sender, apiKey, recognitionLang, targetLang) {
-  if (asrWs) stopASR();
+async function startASR(sender, apiKey, recognitionLang, targetLang) {
+  if (asrHttpStream) stopASR();
 
-  // Use live translation model
-  const url = 'wss://dashscope.aliyuncs.com/api-ws/v1/realtime?model=qwen3-livetranslate-flash-realtime';
+  // Use HTTP/2 streaming API
+  const url = 'https://dashscope.aliyuncs.com/api/v1/services/audio/asr/transcription/streaming';
 
-  let WebSocket;
+  // Language codes for recognition (input)
+  const recognitionLangMap = {
+    'zh-CN': 'zh', 'en-US': 'en', 'ja-JP': 'ja',
+    'ko-KR': 'ko', 'fr-FR': 'fr', 'de-DE': 'de',
+    'es-ES': 'es', 'ru-RU': 'ru'
+  };
+  
+  // If auto, don't set language so server will auto-detect
+  const inputLanguage = recognitionLang === 'auto' ? null : (recognitionLangMap[recognitionLang] || 'zh');
+  
+  // Language codes for translation (output)
+  const translationLangMap = {
+    'zh': 'zh', 'en': 'en', 'ja': 'ja',
+    'ko': 'ko', 'fr': 'fr', 'de': 'de',
+    'es': 'es', 'ru': 'ru'
+  };
+  const outputLanguage = translationLangMap[targetLang] || 'zh';
+
   try {
-    WebSocket = require('ws');
-  } catch (e) {
-    sender.send('asr-error', 'Failed to load ws module, please install: npm install ws');
-    return;
-  }
+    asrActive = true;
+    isStreaming = true;
+    audioBufferQueue = [];
 
-  try {
-    asrWs = new WebSocket(url, {
+    // Start SSE connection for receiving results
+    const sseUrl = `${url}?model=qwen3-asr-flash-realtime&language=${inputLanguage || 'auto'}&translation_language=${outputLanguage}`;
+    
+    // Create streaming request
+    const request = net.request({
+      method: 'POST',
+      url: sseUrl,
       headers: {
         'Authorization': `Bearer ${apiKey}`,
-        'OpenAI-Beta': 'realtime=v1'
+        'Content-Type': 'audio/pcm;rate=16000',
+        'Accept': 'text/event-stream',
+        'Transfer-Encoding': 'chunked'
       }
     });
-  } catch (e) {
-    sender.send('asr-error', 'Failed to create WebSocket: ' + e.message);
-    return;
-  }
 
-  asrWs.on('open', () => {
-    asrActive = true;
-    // Init session with VAD and translation enabled
-    try {
-      // Language codes for recognition (input)
-      const recognitionLangMap = {
-        'zh-CN': 'zh', 'en-US': 'en', 'ja-JP': 'ja',
-        'ko-KR': 'ko', 'fr-FR': 'fr', 'de-DE': 'de',
-        'es-ES': 'es', 'ru-RU': 'ru'
-      };
+    let responseData = '';
+    
+    request.on('response', (response) => {
+      let buffer = '';
       
-      // If auto, don't set language so server will auto-detect
-      const inputLanguage = recognitionLang === 'auto' ? null : (recognitionLangMap[recognitionLang] || 'zh');
-      
-      // Language codes for translation (output)
-      const translationLangMap = {
-        'zh': 'zh', 'en': 'en', 'ja': 'ja',
-        'ko': 'ko', 'fr': 'fr', 'de': 'de',
-        'es': 'es', 'ru': 'ru'
-      };
-      const outputLanguage = translationLangMap[targetLang] || 'zh';
-      
-      let transcriptionConfig = {
-        model: 'qwen3-asr-flash-realtime'
-      };
-      if (inputLanguage) {
-        transcriptionConfig.language = inputLanguage;
-      }
-      
-      let sessionUpdate = {
-        type: 'session.update',
-        session: {
-          modalities: ['text', 'audio'],
-          input_audio_format: 'pcm16',
-          input_audio_transcription: transcriptionConfig,
-          translation: {
-            language: outputLanguage  // Target language for translation
-          },
-          turn_detection: {
-            type: 'server_vad',
-            silence_duration_ms: 400,
-            threshold: 0.5
+      response.on('data', (chunk) => {
+        buffer += chunk.toString();
+        
+        // Process SSE events
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // Keep incomplete line in buffer
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              handleASRMessage(sender, data);
+            } catch (e) {
+              console.error('[ASR] Failed to parse SSE data:', e);
+            }
           }
         }
-      };
-      asrWs.send(JSON.stringify(sessionUpdate));
-    } catch (e) {
-      console.error('[ASR] Failed to send session update:', e);
-    }
-    sender.send('asr-ready');
-  });
+      });
 
-  asrWs.on('message', (data) => {
-    try {
-      const msg = JSON.parse(data.toString());
-    
-      if (msg.response && msg.response.output) {
+      response.on('end', () => {
+        asrActive = false;
+        isStreaming = false;
+        sender.send('asr-closed');
+      });
+
+      response.on('error', (err) => {
+        console.error('[ASR] HTTP stream error:', err);
+        sender.send('asr-error', 'Stream error: ' + (err.message || 'Unknown error'));
+        asrActive = false;
+        isStreaming = false;
+      });
+    });
+
+    request.on('error', (err) => {
+      console.error('[ASR] HTTP request error:', err);
+      sender.send('asr-error', 'Connection error: ' + (err.message || 'Unknown error'));
+      asrActive = false;
+      isStreaming = false;
+    });
+
+    // Start streaming audio data
+    const streamAudio = async () => {
+      while (isStreaming && asrActive) {
+        if (audioBufferQueue.length > 0) {
+          const chunks = audioBufferQueue.splice(0, audioBufferQueue.length);
+          for (const chunk of chunks) {
+            request.write(chunk);
+          }
+        }
+        await new Promise(resolve => setTimeout(resolve, 40)); // ~25fps
       }
-      handleASRMessage(sender, msg);
-    } catch (e) {}
-  });
+      request.end();
+    };
 
-  asrWs.on('error', (err) => {
-    console.error('[ASR] WebSocket error:', err);
-    sender.send('asr-error', 'Connection error: ' + (err.message || 'Unknown error'));
+    // Send initial request to establish connection
+    request.write(Buffer.alloc(0)); // Empty chunk to start
+    
+    asrHttpStream = request;
+    sender.send('asr-ready');
+    
+    // Start audio streaming loop
+    streamAudio();
+    
+  } catch (e) {
+    console.error('[ASR] Failed to start HTTP stream:', e);
+    sender.send('asr-error', 'Failed to start: ' + e.message);
     asrActive = false;
-  });
-
-  asrWs.on('close', (code, reason) => {
-    asrActive = false;
-    sender.send('asr-closed');
-  });
+    isStreaming = false;
+  }
 }
 
 function handleASRMessage(sender, msg) {
@@ -279,12 +298,13 @@ function handleASRMessage(sender, msg) {
 
 function stopASR() {
   asrActive = false;
-  if (asrWs) {
+  isStreaming = false;
+  audioBufferQueue = [];
+  if (asrHttpStream) {
     try {
-      asrWs.send(JSON.stringify({ type: 'session.finish' }));
-      asrWs.close();
+      asrHttpStream.end();
     } catch (e) {}
-    asrWs = null;
+    asrHttpStream = null;
   }
 }
 
